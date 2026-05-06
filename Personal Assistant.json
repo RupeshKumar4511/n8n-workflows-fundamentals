@@ -1,0 +1,146 @@
+{
+  "name": "Personal Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4b591a50-f6b7-4716-9286-6cef5e9fdb0b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        -48
+      ],
+      "id": "9bdeed05-4ad5-4090-9e20-917384dfaa12",
+      "name": "Webhook",
+      "webhookId": "4b591a50-f6b7-4716-9286-6cef5e9fdb0b"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "77be99f1-3e98-418c-8e6f-202857e3b1ea",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        112
+      ],
+      "id": "1d243fb3-933f-4981-af19-6fdaaa42e240",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "qHME2lSuiXTaQfRQ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        176
+      ],
+      "id": "979c24ec-f11c-4ebb-bae7-d540ad8cb593",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        304,
+        -48
+      ],
+      "id": "776e8cf6-2781-4b94-94aa-193101df1157",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3c608808-30ec-43a3-9a16-0ae1a0553ff8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "58a330cee38d7f43b80617c09d68041fe6c2d549410c1429756df8ca6408cc6f"
+  },
+  "id": "zcui8kLWW5cdBvat",
+  "tags": []
+}

@@ -1,0 +1,337 @@
+{
+  "name": "Code Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "rupesh.kumar.rcdu7047@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        144
+      ],
+      "id": "0c8c4bf2-0481-4e33-8e01-241c9e625fdc",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1sKN67p7uZ9PuOQc",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Steps : \n1. Read the code related mail -> tringger node. \n2. Summarize the code using LLM.\n3. Generate the comment for the cod \n4. Step 2 and 3 to be done in parallel. \n5. Merge the output of step 2 and 3. \n6. Send the output to me as mail",
+        "height": 224,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "55108f6b-29ab-4a2e-abd9-6df545e60486",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below \nCode : \n{{ $json.text }}\n\ngenerate comments for the code so that i can understand what each line of the code does. \nNote : Do not modify the existing code lines at all. Just add the comments wherever required.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful assistant and know how to write code in python. You can help me to understand the code by adding comments to it. "
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -144,
+        16
+      ],
+      "id": "52676456-3b0f-4adc-9ced-e5d766d494bf",
+      "name": "Adding_Comments"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\nCode : \n{{ $json.text }}\n\ngenerate a summary of what this code does in very simple language. Do note that the summary should contain all the importatnt details there are in the code so that I know what the code is about in a quick glance.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert in python code. You have the ability to summarize the code in simple language and have the knack to cover important details in the summary."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -160,
+        304
+      ],
+      "id": "71941380-fdcb-4f80-a258-5f4227328e2a",
+      "name": "Summarize code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        224,
+        144
+      ],
+      "id": "1d7b8b13-a959-444c-bc4f-ddcd265c6c78",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "e17feb18-58ea-4818-bcf4-c958768d78f4",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "qHME2lSuiXTaQfRQ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        480
+      ],
+      "id": "fb8b5f0a-39a0-4fb2-93c7-0121b96a22c3",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "qHME2lSuiXTaQfRQ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        432,
+        144
+      ],
+      "id": "f4164a73-81e6-45b9-979b-045a78b1e304",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sendTo": "rupesh.kumar.rcdu7047@gmail.com",
+        "subject": "Code with comments and summary",
+        "emailType": "text",
+        "message": "=Code with comments : \n{{ $json[''][0].text }}\n\nCode Summary : \n{{ $json[''][1].text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        144
+      ],
+      "id": "8aac1256-6e2e-4a52-94eb-ebf3c3daadb6",
+      "name": "Send a message",
+      "webhookId": "6305b087-0f57-43fb-a818-23fda351d9d1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1sKN67p7uZ9PuOQc",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19dc4435cf29b830",
+          "threadId": "19dc440015deb8bc",
+          "labelIds": [
+            "IMPORTANT",
+            "SENT",
+            "INBOX"
+          ],
+          "sizeEstimate": 1659,
+          "headers": {
+            "mime-version": "MIME-Version: 1.0",
+            "date": "Date: Sat, 25 Apr 2026 16:20:41 +0530",
+            "message-id": "Message-ID: <CACQY=0YWcXeyKjY6969sMDNVDjz68JGD1LYm_ByZsp97jvdHVA@mail.gmail.com>",
+            "subject": "Subject: Request for debug code",
+            "from": "From: Rupesh Kumar <rupesh.kumar.rcdu7047@gmail.com>",
+            "to": "To: Rupesh Kumar <rupesh.kumar.rcdu7047@gmail.com>",
+            "content-type": "Content-Type: multipart/alternative; boundary=\"0000000000002509bc065046a7c9\""
+          },
+          "html": "<div dir=\"ltr\"><pre style=\"color:rgb(10,10,10);font-size:14px;background-color:rgb(240,242,245)\"><code><span class=\"gmail-CS0cqb\" style=\"color:rgb(24,128,56)\">import pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.read_csv(&#39;data.csv&#39;)<br>\nX_train, X_test, y_train, y_test = train_test_split(\n    df.drop(&#39;target&#39;, axis=1), df[&#39;target&#39;], test_size=0.2, random_state=42\n)\n\n\nmodel = RandomForestClassifier(n_estimators=100)<br>\nmodel.fit(X_train, y_train)<br>\nprint(f&quot;Prediction for test set: {model.predict(X_test)}&quot;)</span></code></pre></div>\n",
+          "text": "import pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.read_csv('data.csv')\n\nX_train, X_test, y_train, y_test = train_test_split(\n    df.drop('target', axis=1), df['target'], test_size=0.2, random_state=42\n)\n\n\nmodel = RandomForestClassifier(n_estimators=100)\n\nmodel.fit(X_train, y_train)\n\nprint(f\"Prediction for test set: {model.predict(X_test)}\")\n",
+          "textAsHtml": "<p>import pandas as pd<br/>from sklearn.ensemble import RandomForestClassifier<br/>from sklearn.model_selection import train_test_split</p><p>df = pd.read_csv(&apos;data.csv&apos;)</p><p>X_train, X_test, y_train, y_test = train_test_split(<br/>    df.drop(&apos;target&apos;, axis=1), df[&apos;target&apos;], test_size=0.2, random_state=42<br/>)</p><p>model = RandomForestClassifier(n_estimators=100)</p><p><a href=\"http://model.fit\">model.fit</a>(X_train, y_train)</p><p>print(f&quot;Prediction for test set: {model.predict(X_test)}&quot;)</p>",
+          "subject": "Request for debug code",
+          "date": "2026-04-25T10:50:41.000Z",
+          "to": {
+            "value": [
+              {
+                "address": "rupesh.kumar.rcdu7047@gmail.com",
+                "name": "Rupesh Kumar"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Rupesh Kumar</span> &lt;<a href=\"mailto:rupesh.kumar.rcdu7047@gmail.com\" class=\"mp_address_email\">rupesh.kumar.rcdu7047@gmail.com</a>&gt;</span>",
+            "text": "\"Rupesh Kumar\" <rupesh.kumar.rcdu7047@gmail.com>"
+          },
+          "from": {
+            "value": [
+              {
+                "address": "rupesh.kumar.rcdu7047@gmail.com",
+                "name": "Rupesh Kumar"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Rupesh Kumar</span> &lt;<a href=\"mailto:rupesh.kumar.rcdu7047@gmail.com\" class=\"mp_address_email\">rupesh.kumar.rcdu7047@gmail.com</a>&gt;</span>",
+            "text": "\"Rupesh Kumar\" <rupesh.kumar.rcdu7047@gmail.com>"
+          },
+          "messageId": "<CACQY=0YWcXeyKjY6969sMDNVDjz68JGD1LYm_ByZsp97jvdHVA@mail.gmail.com>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Adding_Comments",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summarize code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adding_Comments": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Adding_Comments",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize code",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7806b4b5-f801-4455-a552-2685e53d952f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "58a330cee38d7f43b80617c09d68041fe6c2d549410c1429756df8ca6408cc6f"
+  },
+  "id": "TZkdhHXHBOypMTOa",
+  "tags": []
+}
